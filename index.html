@@ -1072,43 +1072,54 @@
 <script>
   async function registrarAcesso() {
     try {
-      // 1. Captura o IP
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipResponse.json();
+      // 1. Captura todos os dados necessários
+      const ipData = await fetch('https://api.ipify.org?format=json').catch(() => ({ json: () => ({ ip: 'Não capturado' }) }));
+      const { ip } = await ipData.json();
       
-      // 2. Detecta país
+      // 2. Detecta o país
       let pais = 'Não detectado';
       try {
         const paisResponse = await fetch(`https://ipapi.co/${ip}/country_name/`);
         pais = await paisResponse.text();
       } catch (e) {
-        console.error('Erro ao detectar país:', e);
+        console.log('Falha ao detectar país:', e);
       }
+
+      // 3. Prepara os parâmetros codificados
+      const params = {
+        ip: encodeURIComponent(ip),
+        pagina: encodeURIComponent(window.location.pathname),
+        userAgent: encodeURIComponent(navigator.userAgent),
+        pais: encodeURIComponent(pais),
+        dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+        callback: 'handleResponse'
+      };
+
+      // 4. Cria a URL de chamada
+      const queryString = Object.keys(params)
+        .map(key => `${key}=${params[key]}`)
+        .join('&');
       
-      // 3. Prepara todos os parâmetros
-      const params = new URLSearchParams();
-      params.append('ip', ip);
-      params.append('pagina', window.location.pathname);
-      params.append('userAgent', navigator.userAgent);
-      params.append('pais', pais);
-      params.append('dispositivo', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
-      params.append('timestamp', new Date().getTime());
-      params.append('callback', 'handleResponse');
-      
-      // 4. Envia via JSONP
+      const url = `https://script.google.com/macros/s/AKfycbxyQKdB_exYLp9yIMV0VdLR-CkdZaySDED_U1ItmodR2VFvkDWJ2xAaUC_x_z2VRqRx/exec?${queryString}`;
+
+      // 5. Envia os dados via JSONP
       const script = document.createElement('script');
-      script.src = `https://script.google.com/macros/s/AKfycby1W-U-oNvGpr07aUNpMiMIW285p3Ld_GTwFV0f6knHdWIrUl0AdfWefz8pVkzvCCx9/exec?${params.toString()}`;
+      script.src = url;
       document.body.appendChild(script);
       setTimeout(() => script.remove(), 1000);
-      
+
     } catch (error) {
       console.error('Erro no rastreamento:', error);
     }
   }
 
-  // Função de callback opcional
+  // Função de callback para tratamento da resposta
   function handleResponse(data) {
-    console.log('Dados registrados com sucesso:', data);
+    if (data.status === 'success') {
+      console.log('Dados registrados:', data.data);
+    } else {
+      console.error('Erro no registro:', data.error);
+    }
   }
 
   // Dispara o rastreamento
