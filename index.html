@@ -1010,81 +1010,31 @@
                 });
             });
 
-            // Form Submission - Updated Version
-document.getElementById('consultationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    console.log('Form submission started'); // Debug 1
-    
-    // Coleta os dados
-    const formData = {
-        name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        experience: document.getElementById('experience').value,
-        goals: document.getElementById('goals').value.trim()
-    };
-    console.log('Form data collected:', formData); // Debug 2
-    
-    // Validação básica
-    if (!formData.name || !formData.email) {
-        console.log('Validation failed'); // Debug 3
-        alert('Por favor, preencha pelo menos nome e e-mail');
-        return;
-    }
-    
-    try {
-        // Mostra feedback visual
-        const btnSubmit = e.target.querySelector('button[type="submit"]');
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-        console.log('Button state updated'); // Debug 4
-        
-        // URL do seu Web App (SUBSTITUA COM SUA URL REAL)
-        const SCRIPT_URL = "https://script.google.com/macros/s/SEU_SCRIPT_ID/exec";
-        console.log('Preparing to send to:', SCRIPT_URL); // Debug 5
-        
-        // Envia os dados
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-            mode: 'no-cors' // Adicionado para problemas de CORS
-        });
-        console.log('Response received:', response); // Debug 6
-        
-        // Tenta parsear o JSON mesmo em modo no-cors
-        let result;
-        try {
-            result = await response.json();
-        } catch (jsonError) {
-            console.log('JSON parse error, trying text:', jsonError);
-            const text = await response.text();
-            console.log('Raw response:', text);
-            result = {status: "success"}; // Assume success if we can't parse
-        }
-        
-        console.log('Result:', result); // Debug 7
-        
-        if (result && result.status === "success") {
-            console.log('Success, redirecting...'); // Debug 8
-            window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-        } else {
-            throw new Error(result?.message || "Erro desconhecido ao enviar");
-        }
-        
-    } catch (error) {
-        console.error('Full error:', error); // Debug 9
-        alert('Erro ao enviar: ' + (error.message || 'Verifique o console para detalhes'));
-        
-        // Restaura o botão
-        const btnSubmit = e.target.querySelector('button[type="submit"]');
-        if (btnSubmit) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
-        }
-    }
-});
+            // Form Submission
+            const consultationForm = document.getElementById('consultationForm');
+            
+            consultationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const experience = document.getElementById('experience').value;
+                const goals = document.getElementById('goals').value;
+                
+                // Check if required fields are filled
+                if (name && email && experience) {
+                    // Here you would typically send this data to your server
+                    console.log('Form submitted:', { name, email, experience, goals });
+                    
+                    // Redirect to thank you page
+                    window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+                } else {
+                    // Show error message if required fields are not filled
+                    alert('Please fill in all required fields.');
+                }
+            });
+            
             // Dark Mode Toggle - Corrigido e funcional
             const darkModeToggle = document.createElement('div');
             darkModeToggle.innerHTML = '<button id="darkModeToggle" style="position:fixed;bottom:20px;left:20px;z-index:100;background:var(--primary);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.2);"><i class="fas fa-moon"></i></button>';
