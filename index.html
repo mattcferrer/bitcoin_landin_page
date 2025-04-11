@@ -22,7 +22,9 @@
             --text: #333333;
             --text-light: #666666;
         }
-
+        
+<meta name="referrer" content="no-referrer-when-downgrade">
+        
         /* Dark Mode Variables */
         .dark-mode {
             --light: #121212;
@@ -1036,16 +1038,26 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
         btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         
         // URL do seu Web App (SUBSTITUA COM SUA URL)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykuMKkE6zH3JSBtNObWlIFAE0bfaSXhTxveOzJ8pOQh0Bv2j_mLhFYuOLU9TJ51PHGig/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzLN0Q3PX1L6A9PSw2_afeyvfw5J5XaI665QcX_PF-6qBWK1m3kBFpmI-vgYtasXWiOQ/exec";
         
-        // Envia os dados
+        // Envia os dados com tratamento de CORS
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            redirect: 'follow'
+        }).catch(err => {
+            throw new Error(`Erro de conexão: ${err.message}`);
         });
+        
+        // Verifica se a resposta é OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
         
         const result = await response.json();
         
@@ -1053,11 +1065,11 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
             // Redireciona após sucesso
             window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
         } else {
-            throw new Error(result.message || "Erro ao enviar formulário");
+            throw new Error(result.message || "Erro ao processar formulário");
         }
         
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro completo:', error);
         alert('Erro ao enviar: ' + error.message);
         
         // Restaura o botão
