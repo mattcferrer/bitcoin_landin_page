@@ -1012,68 +1012,68 @@
             });
 
             // Form Submission - Updated Version
-            const consultationForm = document.getElementById('consultationForm');
-            
-            consultationForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                // Get form elements
-                const btnSubmit = e.target.querySelector('button[type="submit"]');
-                const errorDiv = document.getElementById('form-error');
-                const originalText = btnSubmit.innerHTML;
-                
-                try {
-                    // Show loading state
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-                    errorDiv.style.display = 'none';
-                    
-                    // Get form values
-                    const formData = {
-                        name: document.getElementById('name').value.trim(),
-                        email: document.getElementById('email').value.trim(),
-                        experience: document.getElementById('experience').value,
-                        goals: document.getElementById('goals').value.trim()
-                    };
-                    
-                    // Basic validation
-                    if (!formData.name || !formData.email || !formData.experience) {
-                        throw new Error('Please fill in all required fields');
-                    }
-                    
-                    // Send to Google Sheets
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbyXommS23dhCPfsq2W7M4ClNtDHoCcmQBrEejRQ8VqF9PQGnrhRHZ6J-hKJlf9IA_1b_w/exec
-', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-                    
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Failed to submit form');
-                    }
-                    
-                    const result = await response.json();
-                    
-                    if (result.status === "success") {
-                        window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-                    } else {
-                        throw new Error(result.message || 'Submission error');
-                    }
-                    
-                } catch (error) {
-                    console.error('Submission error:', error);
-                    errorDiv.textContent = error.message;
-                    errorDiv.style.display = 'block';
-                    
-                } finally {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = originalText;
-                }
-            });
+document.getElementById('consultationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    const errorDiv = document.getElementById('form-error');
+    const originalText = btnSubmit.innerHTML;
+    
+    try {
+        // Mostra estado de carregamento
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        errorDiv.style.display = 'none';
+        
+        // Coleta os dados
+        const formData = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            experience: document.getElementById('experience').value,
+            goals: document.getElementById('goals').value.trim()
+        };
+        
+        // Validação
+        if (!formData.name || !formData.email || !formData.experience) {
+            throw new Error('Please fill all required fields');
+        }
+        
+        // Envio dos dados
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzbPn5PSakt7UDjH5-xq6b4kd-NVRFjCm0A87VT3ONDmMgYwVCxNwn2sNpOsgUVYDNMOA/exec', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        // Verifica se a resposta é JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!response.ok || result.status !== "success") {
+            throw new Error(result.message || 'Failed to submit form');
+        }
+        
+        // Redireciona após sucesso
+        window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+        
+    } catch (error) {
+        console.error('Submission error:', error);
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+        
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = originalText;
+    }
+});
             
             // Dark Mode Toggle - Corrigido e funcional
             const darkModeToggle = document.createElement('div');
