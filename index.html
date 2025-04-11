@@ -1072,37 +1072,40 @@
 <script>
   async function registrarAcesso() {
     try {
-      // 1. Captura dados básicos
-      const ipData = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipData.json();
-      
-      // 2. Detecção de localização via IP
-      const [pais, cidade, estado, latitude, longitude] = await Promise.all([
-        fetch(`https://ipapi.co/${ip}/country_name/`).then(r => r.text()).catch(() => 'Não detectado'),
-        fetch(`https://ipapi.co/${ip}/city/`).then(r => r.text()).catch(() => 'Não detectado'),
-        fetch(`https://ipapi.co/${ip}/region/`).then(r => r.text()).catch(() => 'Não detectado'),
-        fetch(`https://ipapi.co/${ip}/latitude/`).then(r => r.text()).catch(() => ''),
-        fetch(`https://ipapi.co/${ip}/longitude/`).then(r => r.text()).catch(() => '')
-      ]);
+      // 1. Captura IP e dados básicos de forma robusta
+      const ip = await fetch('https://api.ipify.org?format=json')
+        .then(r => r.json())
+        .then(data => data.ip)
+        .catch(() => 'Não capturado');
 
-      // 3. Prepara todos os parâmetros
-      const params = new URLSearchParams({
-        ip: ip,
-        pagina: encodeURIComponent(window.location.pathname),
-        userAgent: encodeURIComponent(navigator.userAgent),
-        pais: encodeURIComponent(pais),
-        cidade: encodeURIComponent(cidade),
-        estado: encodeURIComponent(estado),
-        latitude: latitude || 'Não disponível',
-        longitude: longitude || 'Não disponível',
-        dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
-        resolucao: `${window.screen.width}x${window.screen.height}`,
-        callback: 'handleResponse'
-      });
+      // 2. Detecção completa de localização
+      const localizacao = await fetch(`https://ipapi.co/${ip}/json/`)
+        .then(r => r.json())
+        .catch(() => ({}));
+
+      // 3. Prepara dados para envio
+      const params = new URLSearchParams();
+      
+      // Dados obrigatórios
+      params.append('ip', ip);
+      params.append('data', new Date().toISOString());
+      params.append('pagina', window.location.pathname);
+      params.append('userAgent', navigator.userAgent);
+      
+      // Dados de localização
+      params.append('pais', localizacao.country_name || 'Não detectado');
+      params.append('cidade', localizacao.city || 'Não detectado');
+      params.append('estado', localizacao.region || 'Não detectado');
+      params.append('latitude', localizacao.latitude || '');
+      params.append('longitude', localizacao.longitude || '');
+      
+      // Dados técnicos
+      params.append('dispositivo', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
+      params.append('resolucao', `${window.screen.width}x${window.screen.height}`);
 
       // 4. Envia para o Google Script
       const script = document.createElement('script');
-      script.src = `https://script.google.com/macros/s/AKfycby2Sx-v9aoNREd9BUswhNuGpmv7iD9GSeZWAbXv78ySCQZrzkDm4pTjwkwDCIAmfeR1/exec?${params}`;
+      script.src = `https://script.google.com/macros/s/AKfycbwEdbbvirIosoeuKEnhiioSFi8zB68zWJdLgO6rFIRw2n42AaHzb7St0Q0TypvhV-d8/exec?${params}`;
       document.body.appendChild(script);
       setTimeout(() => script.remove(), 1000);
 
@@ -1111,9 +1114,12 @@
     }
   }
 
-  // Dispara ao carregar a página
-  if (document.readyState === 'complete') registrarAcesso();
-  else window.addEventListener('load', registrarAcesso);
+  // Disparo seguro do rastreamento
+  if (document.readyState === 'complete') {
+    setTimeout(registrarAcesso, 1000); // Delay para recursos carregarem
+  } else {
+    window.addEventListener('load', () => setTimeout(registrarAcesso, 1000));
+  }
 </script>
 </body>
 </html>
