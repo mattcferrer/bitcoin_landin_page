@@ -1013,27 +1013,49 @@
             // Form Submission
             const consultationForm = document.getElementById('consultationForm');
             
-            consultationForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get form values
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const experience = document.getElementById('experience').value;
-                const goals = document.getElementById('goals').value;
-                
-                // Check if required fields are filled
-                if (name && email && experience) {
-                    // Here you would typically send this data to your server
-                    console.log('Form submitted:', { name, email, experience, goals });
-                    
-                    // Redirect to thank you page
-                    window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-                } else {
-                    // Show error message if required fields are not filled
-                    alert('Please fill in all required fields.');
-                }
-            });
+            consultationForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  // Get form values
+  const formData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    experience: document.getElementById('experience').value,
+    goals: document.getElementById('goals').value
+  };
+  
+  // Check if required fields are filled
+  if (formData.name && formData.email && formData.experience) {
+    try {
+      // URL do seu Web App (substitua pelo seu)
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbypkEBhfPK-uRDZZnIGYrdn5Pi3WwUilYjCbdo80r8SigMcJ4CTEU8Su8eRP_kVzfRgPA/exec";
+      
+      // Envia os dados para o Google Apps Script
+      const response = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const result = await response.json();
+      
+      if (result.result === "success") {
+        // Redirect to thank you page
+        window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+      } else {
+        alert('Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.');
+    }
+  } else {
+    // Show error message if required fields are not filled
+    alert('Por favor, preencha todos os campos obrigatórios.');
+  }
+});
 
             // Dark Mode Toggle - Corrigido e funcional
             const darkModeToggle = document.createElement('div');
