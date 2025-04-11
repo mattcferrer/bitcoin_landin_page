@@ -1068,50 +1068,50 @@
             });
         });
     </script>
-<!-- Início do Código de Rastreamento - Não modifique outras partes do site -->
 <script>
-  // Função para registrar acesso
+  // Função para processar a resposta
+  function handleIPResponse(data) {
+    console.log("Acesso registrado com sucesso:", data);
+  }
+
+  // Função principal de rastreamento
   async function registrarAcesso() {
     try {
-      // Captura IP
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipResponse.json();
+      // 1. Captura o IP
+      const { ip } = await fetch('https://api.ipify.org?format=json').then(res => res.json());
       
-      // Detecta país
+      // 2. Detecta país (opcional)
       let pais = "Não detectado";
       try {
-        const paisResponse = await fetch(`https://ipapi.co/${ip}/country_name/`);
-        pais = await paisResponse.text();
-      } catch (e) { console.log("Erro ao detectar país:", e); }
+        pais = await fetch(`https://ipapi.co/${ip}/country_name/`).then(res => res.text());
+      } catch(e) { console.log("Erro ao detectar país:", e); }
       
-      // Prepara dados
-      const dados = {
+      // 3. Cria requisição JSONP
+      const script = document.createElement('script');
+      const params = new URLSearchParams({
+        callback: 'handleIPResponse',
         ip: ip,
         pagina: window.location.pathname,
         userAgent: navigator.userAgent,
         dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-        pais: pais
-      };
-      
-      // Envia para o Google Script
-      await fetch('https://script.google.com/macros/s/AKfycbwWtWjcLKiSJj2fYgX_Q5mDZjM0fDrOQbXZOhrFP6WP1ecC0XNiVTu7mHHNSV9E4K05/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
+        pais: pais,
+        timestamp: new Date().toISOString()
       });
+      
+      script.src = `https://script.google.com/macros/s/AKfycbwWtWjcLKiSJj2fYgX_Q5mDZjM0fDrOQbXZOhrFP6WP1ecC0XNiVTu7mHHNSV9E4K05/exec?${params}`;
+      
+      // 4. Adiciona e remove o script
+      document.body.appendChild(script);
+      setTimeout(() => script.remove(), 1000);
       
     } catch (error) {
       console.error("Erro no rastreamento:", error);
     }
   }
-  
-  // Dispara ao carregar a página
-  if (document.readyState === 'complete') {
-    registrarAcesso();
-  } else {
-    window.addEventListener('load', registrarAcesso);
-  }
+
+  // Dispara o rastreamento
+  if (document.readyState === 'complete') registrarAcesso();
+  else window.addEventListener('load', registrarAcesso);
 </script>
-<!-- Fim do Código de Rastreamento -->
 </body>
 </html>
