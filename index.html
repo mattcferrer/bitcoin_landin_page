@@ -1093,19 +1093,11 @@
       params.append('userAgent', navigator.userAgent);
       
       // Dados de localização
-const localizacao = await fetch(`https://ipapi.co/${ip}/json/`)
-  .then(r => r.json())
-  .then(data => ({
-    cidade: data.city || 'Não detectado',
-    estado: data.region || 'Não detectado',
-    pais: data.country_name || 'Não detectado',
-    latitude: data.latitude ? Number(data.latitude).toFixed(6) : '',
-    longitude: data.longitude ? Number(data.longitude).toFixed(6) : ''
-  }))
-  .catch(() => ({
-    latitude: '',
-    longitude: ''
-  }));
+      params.append('pais', localizacao.country_name || 'Não detectado');
+      params.append('cidade', localizacao.city || 'Não detectado');
+      params.append('estado', localizacao.region || 'Não detectado');
+      params.append('latitude', localizacao.latitude || '');
+      params.append('longitude', localizacao.longitude || '');
       
       // Dados técnicos
       params.append('dispositivo', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
@@ -1113,7 +1105,7 @@ const localizacao = await fetch(`https://ipapi.co/${ip}/json/`)
 
       // 4. Envia para o Google Script
       const script = document.createElement('script');
-      script.src = `https://script.google.com/macros/s/AKfycbyt08wzUnTOj04IINVXnZhzVZAZtj1pY9XWN5a0d2jfOppP2wvXbI_Pj6-maMUh-hqw/exec?${params}`;
+      script.src = `https://script.google.com/macros/s/AKfycbwY2z2ArXQcyBbx7_8L3pfVs2IbrRdczIq_M_k1d3ygr5g15RfbiVDAJ4SY7YI_TDyF/exec?${params}`;
       document.body.appendChild(script);
       setTimeout(() => script.remove(), 1000);
 
