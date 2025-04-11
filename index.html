@@ -849,7 +849,7 @@
 
     <footer>
         <div class="social-links">
-            <a href="mailto:mattcastrofcontato@gmail.com" class="hover-3d"><i class="fas fa-envelope"></i></a>
+            <a href="mailto:mattcferrercontato@gmail.com" class="hover-3d"><i class="fas fa-envelope"></i></a>
         </div>
         <p>© 2025 Matthias Castro Ferrer. All Rights Reserved.</p>
     </footer>
@@ -1068,5 +1068,30 @@
             });
         });
     </script>
+
+
+<script>
+  async function registrarAcesso() {
+    try {
+      const ip = (await fetch('https://api.ipify.org?format=json').then(res => res.json())).ip;
+      const pais = await fetch(`https://ipapi.co/${ip}/country_name/`).then(res => res.text()).catch(() => "Não detectado");
+      
+      await fetch('https://script.google.com/macros/s/AKfycbzhv8nGdtIjgkjP-kr2g3CSv4nJdpol0mBIy1SD-dZzt2VaXkUrU6FhHworavhJP90p/exec', { // ← Cole a URL da API aqui
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ip: ip,
+          pagina: window.location.href,
+          userAgent: navigator.userAgent,
+          pais: pais,
+          dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop"
+        })
+      });
+    } catch (error) {
+      console.error("Erro ao registrar acesso:", error);
+    }
+  }
+  window.addEventListener('load', registrarAcesso);
+</script>
 </body>
 </html>
