@@ -1010,64 +1010,61 @@
                 });
             });
 
-            // Form Submission
-            const consultationForm = document.getElementById('consultationForm');
-            
-            document.getElementById('consultationForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  // Coleta os dados
-  const formData = {
-    name: document.getElementById('name').value.trim(),
-    email: document.getElementById('email').value.trim(),
-    experience: document.getElementById('experience').value,
-    goals: document.getElementById('goals').value.trim()
-  };
-  
-  // Validação básica
-  if (!formData.name || !formData.email) {
-    alert('Por favor, preencha pelo menos nome e e-mail');
-    return;
-  }
-  
-  try {
-    // Mostra feedback visual
-    const btnSubmit = e.target.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            // Form Submission - Updated Version
+document.getElementById('consultationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
     
-    // URL do seu Web App (SUBSTITUA COM SUA URL)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5rlBk6t24o2pVimSuZkmq6fYfhMHRbOQ1j7WuArahmQ2qeuVeSj6nFf9z5JejEfWQyg/exec";
+    // Coleta os dados
+    const formData = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        experience: document.getElementById('experience').value,
+        goals: document.getElementById('goals').value.trim()
+    };
     
-    // Envia os dados
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData)
-    });
-    
-    const result = await response.json();
-    
-    if (result.status === "success") {
-      // Redireciona após sucesso
-      window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-    } else {
-      throw new Error(result.message || "Erro ao enviar formulário");
+    // Validação básica
+    if (!formData.name || !formData.email) {
+        alert('Por favor, preencha pelo menos nome e e-mail');
+        return;
     }
     
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao enviar: ' + error.message);
-    
-    // Restaura o botão
-    const btnSubmit = e.target.querySelector('button[type="submit"]');
-    btnSubmit.disabled = false;
-    btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
-  }
+    try {
+        // Mostra feedback visual
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // URL do seu Web App (SUBSTITUA COM SUA URL)
+        const SCRIPT_URL = "https://script.google.com/macros/s/SEU_ID/exec";
+        
+        // Envia os dados
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            // Redireciona após sucesso
+            window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+        } else {
+            throw new Error(result.message || "Erro ao enviar formulário");
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao enviar: ' + error.message);
+        
+        // Restaura o botão
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
+    }
 });
-
             // Dark Mode Toggle - Corrigido e funcional
             const darkModeToggle = document.createElement('div');
             darkModeToggle.innerHTML = '<button id="darkModeToggle" style="position:fixed;bottom:20px;left:20px;z-index:100;background:var(--primary);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.2);"><i class="fas fa-moon"></i></button>';
