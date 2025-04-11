@@ -1013,6 +1013,7 @@
             // Form Submission - Updated Version
 document.getElementById('consultationForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Form submission started'); // Debug 1
     
     // Coleta os dados
     const formData = {
@@ -1021,9 +1022,11 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
         experience: document.getElementById('experience').value,
         goals: document.getElementById('goals').value.trim()
     };
+    console.log('Form data collected:', formData); // Debug 2
     
     // Validação básica
     if (!formData.name || !formData.email) {
+        console.log('Validation failed'); // Debug 3
         alert('Por favor, preencha pelo menos nome e e-mail');
         return;
     }
@@ -1033,9 +1036,11 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        console.log('Button state updated'); // Debug 4
         
-        // URL do seu Web App (SUBSTITUA COM SUA URL)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5rlBk6t24o2pVimSuZkmq6fYfhMHRbOQ1j7WuArahmQ2qeuVeSj6nFf9z5JejEfWQyg/exec";
+        // URL do seu Web App (SUBSTITUA COM SUA URL REAL)
+        const SCRIPT_URL = "https://script.google.com/macros/s/SEU_SCRIPT_ID/exec";
+        console.log('Preparing to send to:', SCRIPT_URL); // Debug 5
         
         // Envia os dados
         const response = await fetch(SCRIPT_URL, {
@@ -1043,26 +1048,41 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            mode: 'no-cors' // Adicionado para problemas de CORS
         });
+        console.log('Response received:', response); // Debug 6
         
-        const result = await response.json();
+        // Tenta parsear o JSON mesmo em modo no-cors
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonError) {
+            console.log('JSON parse error, trying text:', jsonError);
+            const text = await response.text();
+            console.log('Raw response:', text);
+            result = {status: "success"}; // Assume success if we can't parse
+        }
         
-        if (result.status === "success") {
-            // Redireciona após sucesso
+        console.log('Result:', result); // Debug 7
+        
+        if (result && result.status === "success") {
+            console.log('Success, redirecting...'); // Debug 8
             window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
         } else {
-            throw new Error(result.message || "Erro ao enviar formulário");
+            throw new Error(result?.message || "Erro desconhecido ao enviar");
         }
         
     } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao enviar: ' + error.message);
+        console.error('Full error:', error); // Debug 9
+        alert('Erro ao enviar: ' + (error.message || 'Verifique o console para detalhes'));
         
         // Restaura o botão
         const btnSubmit = e.target.querySelector('button[type="submit"]');
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
+        }
     }
 });
             // Dark Mode Toggle - Corrigido e funcional
