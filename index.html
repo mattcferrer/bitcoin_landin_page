@@ -1072,39 +1072,37 @@
 <script>
   async function registrarAcesso() {
     try {
-      // 1. Captura todos os dados necessários
-      const ipData = await fetch('https://api.ipify.org?format=json').catch(() => ({ json: () => ({ ip: 'Não capturado' }) }));
+      // 1. Captura dados básicos
+      const ipData = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipData.json();
       
-      // 2. Detecta o país
-      let pais = 'Não detectado';
-      try {
-        const paisResponse = await fetch(`https://ipapi.co/${ip}/country_name/`);
-        pais = await paisResponse.text();
-      } catch (e) {
-        console.log('Falha ao detectar país:', e);
-      }
+      // 2. Detecção de localização via IP
+      const [pais, cidade, estado, latitude, longitude] = await Promise.all([
+        fetch(`https://ipapi.co/${ip}/country_name/`).then(r => r.text()).catch(() => 'Não detectado'),
+        fetch(`https://ipapi.co/${ip}/city/`).then(r => r.text()).catch(() => 'Não detectado'),
+        fetch(`https://ipapi.co/${ip}/region/`).then(r => r.text()).catch(() => 'Não detectado'),
+        fetch(`https://ipapi.co/${ip}/latitude/`).then(r => r.text()).catch(() => ''),
+        fetch(`https://ipapi.co/${ip}/longitude/`).then(r => r.text()).catch(() => '')
+      ]);
 
-      // 3. Prepara os parâmetros codificados
-      const params = {
-        ip: encodeURIComponent(ip),
+      // 3. Prepara todos os parâmetros
+      const params = new URLSearchParams({
+        ip: ip,
         pagina: encodeURIComponent(window.location.pathname),
         userAgent: encodeURIComponent(navigator.userAgent),
         pais: encodeURIComponent(pais),
+        cidade: encodeURIComponent(cidade),
+        estado: encodeURIComponent(estado),
+        latitude: latitude || 'Não disponível',
+        longitude: longitude || 'Não disponível',
         dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+        resolucao: `${window.screen.width}x${window.screen.height}`,
         callback: 'handleResponse'
-      };
+      });
 
-      // 4. Cria a URL de chamada
-      const queryString = Object.keys(params)
-        .map(key => `${key}=${params[key]}`)
-        .join('&');
-      
-      const url = `https://script.google.com/macros/s/AKfycbxyQKdB_exYLp9yIMV0VdLR-CkdZaySDED_U1ItmodR2VFvkDWJ2xAaUC_x_z2VRqRx/exec?${queryString}`;
-
-      // 5. Envia os dados via JSONP
+      // 4. Envia para o Google Script
       const script = document.createElement('script');
-      script.src = url;
+      script.src = `https://script.google.com/macros/s/AKfycby2Sx-v9aoNREd9BUswhNuGpmv7iD9GSeZWAbXv78ySCQZrzkDm4pTjwkwDCIAmfeR1/exec?${params}`;
       document.body.appendChild(script);
       setTimeout(() => script.remove(), 1000);
 
@@ -1113,21 +1111,9 @@
     }
   }
 
-  // Função de callback para tratamento da resposta
-  function handleResponse(data) {
-    if (data.status === 'success') {
-      console.log('Dados registrados:', data.data);
-    } else {
-      console.error('Erro no registro:', data.error);
-    }
-  }
-
-  // Dispara o rastreamento
-  if (document.readyState === 'complete') {
-    registrarAcesso();
-  } else {
-    window.addEventListener('load', registrarAcesso);
-  }
+  // Dispara ao carregar a página
+  if (document.readyState === 'complete') registrarAcesso();
+  else window.addEventListener('load', registrarAcesso);
 </script>
 </body>
 </html>
