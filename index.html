@@ -1068,30 +1068,50 @@
             });
         });
     </script>
-
-
+<!-- Início do Código de Rastreamento - Não modifique outras partes do site -->
 <script>
+  // Função para registrar acesso
   async function registrarAcesso() {
     try {
-      const ip = (await fetch('https://api.ipify.org?format=json').then(res => res.json())).ip;
-      const pais = await fetch(`https://ipapi.co/${ip}/country_name/`).then(res => res.text()).catch(() => "Não detectado");
+      // Captura IP
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const { ip } = await ipResponse.json();
       
-      await fetch('https://script.google.com/macros/s/AKfycbzhv8nGdtIjgkjP-kr2g3CSv4nJdpol0mBIy1SD-dZzt2VaXkUrU6FhHworavhJP90p/exec', { // ← Cole a URL da API aqui
+      // Detecta país
+      let pais = "Não detectado";
+      try {
+        const paisResponse = await fetch(`https://ipapi.co/${ip}/country_name/`);
+        pais = await paisResponse.text();
+      } catch (e) { console.log("Erro ao detectar país:", e); }
+      
+      // Prepara dados
+      const dados = {
+        ip: ip,
+        pagina: window.location.pathname,
+        userAgent: navigator.userAgent,
+        dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        pais: pais
+      };
+      
+      // Envia para o Google Script
+      await fetch('https://script.google.com/macros/s/AKfycbwWtWjcLKiSJj2fYgX_Q5mDZjM0fDrOQbXZOhrFP6WP1ecC0XNiVTu7mHHNSV9E4K05/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ip: ip,
-          pagina: window.location.href,
-          userAgent: navigator.userAgent,
-          pais: pais,
-          dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop"
-        })
+        body: JSON.stringify(dados)
       });
+      
     } catch (error) {
-      console.error("Erro ao registrar acesso:", error);
+      console.error("Erro no rastreamento:", error);
     }
   }
-  window.addEventListener('load', registrarAcesso);
+  
+  // Dispara ao carregar a página
+  if (document.readyState === 'complete') {
+    registrarAcesso();
+  } else {
+    window.addEventListener('load', registrarAcesso);
+  }
 </script>
+<!-- Fim do Código de Rastreamento -->
 </body>
 </html>
