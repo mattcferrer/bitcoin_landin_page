@@ -1010,30 +1010,64 @@
                 });
             });
 
-            // Form Submission
-            const consultationForm = document.getElementById('consultationForm');
-            
-            consultationForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get form values
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const experience = document.getElementById('experience').value;
-                const goals = document.getElementById('goals').value;
-                
-                // Check if required fields are filled
-                if (name && email && experience) {
-                    // Here you would typically send this data to your server
-                    console.log('Form submitted:', { name, email, experience, goals });
-                    
-                    // Redirect to thank you page
-                    window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-                } else {
-                    // Show error message if required fields are not filled
-                    alert('Please fill in all required fields.');
-                }
-            });
+            // Form Submission - Versão Final
+document.getElementById('consultationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Coleta os dados
+    const formData = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        experience: document.getElementById('experience').value,
+        goals: document.getElementById('goals').value.trim()
+    };
+    
+    // Validação básica
+    if (!formData.name || !formData.email) {
+        alert('Por favor, preencha pelo menos nome e e-mail');
+        return;
+    }
+    
+    try {
+        // Mostra feedback visual
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        const originalText = btnSubmit.innerHTML;
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // URL do seu Web App (SUBSTITUA COM SUA URL)
+        const SCRIPT_URL = "SUA_URL_DO_WEB_APP_AQUI";
+        
+        // Envia os dados
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            // Redireciona após sucesso
+            window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+        } else {
+            throw new Error(result.message || "Erro ao enviar formulário");
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao enviar: ' + error.message);
+        
+        // Restaura o botão
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalText;
+        }
+    }
+});
             
             // Dark Mode Toggle - Corrigido e funcional
             const darkModeToggle = document.createElement('div');
