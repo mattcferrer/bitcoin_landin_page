@@ -1013,47 +1013,58 @@
             // Form Submission
             const consultationForm = document.getElementById('consultationForm');
             
-            consultationForm.addEventListener('submit', async function(e) {
+            document.getElementById('consultationForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  // Get form values
+  // Coleta os dados
   const formData = {
-    name: document.getElementById('name').value,
-    email: document.getElementById('email').value,
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
     experience: document.getElementById('experience').value,
-    goals: document.getElementById('goals').value
+    goals: document.getElementById('goals').value.trim()
   };
   
-  // Check if required fields are filled
-  if (formData.name && formData.email && formData.experience) {
-    try {
-      // URL do seu Web App (substitua pelo seu)
-      const scriptUrl = "https://script.google.com/macros/s/AKfycbypkEBhfPK-uRDZZnIGYrdn5Pi3WwUilYjCbdo80r8SigMcJ4CTEU8Su8eRP_kVzfRgPA/exec";
-      
-      // Envia os dados para o Google Apps Script
-      const response = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      const result = await response.json();
-      
-      if (result.result === "success") {
-        // Redirect to thank you page
-        window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
-      } else {
-        alert('Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.');
+  // Validação básica
+  if (!formData.name || !formData.email) {
+    alert('Por favor, preencha pelo menos nome e e-mail');
+    return;
+  }
+  
+  try {
+    // Mostra feedback visual
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    
+    // URL do seu Web App (SUBSTITUA COM SUA URL)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5rlBk6t24o2pVimSuZkmq6fYfhMHRbOQ1j7WuArahmQ2qeuVeSj6nFf9z5JejEfWQyg/exec";
+    
+    // Envia os dados
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === "success") {
+      // Redireciona após sucesso
+      window.location.href = 'https://mattcferrer.github.io/thank-you-page/';
+    } else {
+      throw new Error(result.message || "Erro ao enviar formulário");
     }
-  } else {
-    // Show error message if required fields are not filled
-    alert('Por favor, preencha todos os campos obrigatórios.');
+    
+  } catch (error) {
+    console.error('Erro:', error);
+    alert('Erro ao enviar: ' + error.message);
+    
+    // Restaura o botão
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    btnSubmit.disabled = false;
+    btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Enviar</span>';
   }
 });
 
